@@ -53,9 +53,10 @@ That's it — no commands, no setup.
 
 ## Updates
 
-Clippy checks GitHub for a newer release on launch (you can turn this off in Settings).
-When one is available, the menu bar shows **⤓ Update to vX.Y.Z…**, which opens the
-download page — nothing is installed silently.
+Clippy checks GitHub for a newer release on launch (toggle in Settings). When one is
+available, the menu bar shows **⤓ Update to vX.Y.Z…**. Click it (or *Update now* in
+Settings) and Clippy **downloads, installs and restarts itself** — no dragging, no
+Terminal. Your history, settings and Accessibility permission are kept.
 
 ## The "unidentified developer" prompt
 
@@ -84,9 +85,10 @@ Requirements: macOS 14+ and the Command Line Tools (`swift`).
 
 1. Bump `CFBundleShortVersionString` in `Info.plist`.
 2. `./build.sh && ./make-dmg.sh`
-3. `gh release create vX.Y.Z Clippy.dmg --title "Clippy X.Y.Z" --notes "…"`
+3. `gh release create vX.Y.Z Clippy.dmg Clippy.zip --title "Clippy X.Y.Z" --notes "…"`
 
-Installed copies detect the new release on next launch and show the update in the menu.
+Both assets matter: **Clippy.dmg** for the website download, **Clippy.zip** for the
+in-app updater. Installed copies detect the new release on next launch and update in one click.
 
 ## Project layout
 

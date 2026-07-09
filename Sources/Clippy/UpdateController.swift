@@ -78,22 +78,38 @@ final class UpdateController: NSObject {
         let page = pageURL?.absoluteString ?? ""
         // Move the old bundle aside, copy the new one in; restore on failure so the
         // app is never left missing.
+        let log = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Clippy/update.log").path
         let script = """
         #!/bin/bash
         NEW="\(newApp.path)"
         DEST="\(dest)"
+        LOG="\(log)"
         BACKUP="$DEST.old-$$"
+        echo "$(date) --- swap start NEW=$NEW DEST=$DEST" >> "$LOG"
         for i in $(seq 1 100); do kill -0 \(pid) 2>/dev/null || break; sleep 0.1; done
         sleep 0.3
         /usr/bin/xattr -dr com.apple.quarantine "$NEW" 2>/dev/null
         /bin/mv "$DEST" "$BACKUP" 2>/dev/null
         if /usr/bin/ditto "$NEW" "$DEST"; then
           /bin/rm -rf "$BACKUP"
+          echo "$(date) ditto OK" >> "$LOG"
         else
           /bin/rm -rf "$DEST"; /bin/mv "$BACKUP" "$DEST"
+          echo "$(date) ditto FAILED, restored backup" >> "$LOG"
         fi
         /usr/bin/xattr -dr com.apple.quarantine "$DEST" 2>/dev/null
-        /usr/bin/open "$DEST" 2>/dev/null || /usr/bin/open "\(page)"
+        LSREG="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+        "$LSREG" -f "$DEST" 2>/dev/null
+        sleep 0.5
+        /usr/bin/open "$DEST"
+        echo "$(date) open status=$? dest_exists=$([ -d "$DEST" ] && echo yes || echo no)" >> "$LOG"
+        sleep 2
+        if ! /usr/bin/pgrep -f "$DEST/Contents/MacOS/Clippy" >/dev/null 2>&1; then
+          echo "$(date) not up after open — launching binary directly" >> "$LOG"
+          "$DEST/Contents/MacOS/Clippy" >/dev/null 2>&1 &
+        fi
+        echo "$(date) done" >> "$LOG"
         """
         let scriptURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("clippy-update-\(UUID().uuidString).sh")
