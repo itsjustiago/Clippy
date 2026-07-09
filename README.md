@@ -11,13 +11,13 @@ App nativa em Swift/SwiftUI que vive na barra de menus, guarda tudo o que copias
 **[Descarregar a última versão (Clippy.zip)](https://github.com/itsjustiago/Clippy/releases/latest/download/Clippy.zip)**
 
 1. Descompacta e arrasta **Clippy.app** para a pasta *Aplicações*.
-2. A app é assinada com um certificado próprio (não é da App Store), por isso o macOS
-   bloqueia-a à primeira abertura. Para autorizar, corre no Terminal:
-   ```bash
-   xattr -dr com.apple.quarantine /Applications/Clippy.app
-   ```
-   *(em alternativa: botão direito em Clippy.app → Abrir → Abrir)*
-3. Abre a Clippy e carrega em **`⌥V`**.
+2. Como não é uma app da App Store, à primeira o macOS mostra um aviso.
+   **Clica com o botão direito em Clippy.app → Abrir → Abrir** (só uma vez).
+   Se o macOS não deixar logo, vai a *Definições do Sistema → Privacidade e Segurança*
+   e carrega em **"Abrir na mesma"**.
+   <br>*(Atalho para quem gosta do Terminal: `xattr -dr com.apple.quarantine /Applications/Clippy.app`)*
+3. Abre a Clippy: aparece um **ecrã de boas-vindas** com um botão para ativar o colar
+   automático. Depois é só carregar em **`⌥V`**.
 
 > Preferes compilar a partir do código? Salta para [Compilar e instalar](#compilar-e-instalar).
 
@@ -34,6 +34,7 @@ App nativa em Swift/SwiftUI que vive na barra de menus, guarda tudo o que copias
 - **App de origem** — mostra de que aplicação veio cada cópia.
 - **Privacidade** — ignora conteúdo marcado como sensível por gestores de palavras-passe.
 - **Menu na barra** — vê os últimos itens, limpa o histórico, arranque automático.
+- **Ecrã de boas-vindas** — na 1.ª abertura, com botão para ativar o colar automático num clique.
 - Sem ícone no Dock. Histórico guardado localmente (até 200 itens).
 
 ## Compilar e instalar
@@ -54,11 +55,11 @@ Requisitos: macOS 14+ e as Command Line Tools (`swift`).
 1. Abre a app — aparece o ícone 📋 na barra de menus.
 2. Copia algumas coisas (`⌘C`).
 3. Carrega em **`⌥V`** para abrir o histórico.
-4. **Para o colar automático:** na primeira vez que colas, o macOS pede
-   permissão de **Acessibilidade**. Ativa *Clippy* em
-   *Definições do Sistema → Privacidade e Segurança → Acessibilidade*.
-   Graças ao certificado estável, basta concederes **uma vez** — fica para sempre.
-   (Sem esta permissão, o item é à mesma copiado para o clipboard — basta colares com `⌘V`.)
+4. **Para o colar automático:** no ecrã de boas-vindas (ou no menu 📋 →
+   *Ativar colar automático*) carrega em **Conceder acesso** e ativa *Clippy* em
+   *Privacidade e Segurança → Acessibilidade*. Graças ao certificado estável, basta
+   concederes **uma vez** — fica para sempre.
+   (Sem esta permissão, o item é à mesma copiado — basta colares com `⌘V`.)
 
 ## Atalhos no painel
 

@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let store = HistoryStore()
     private lazy var clipboard = ClipboardManager(store: store)
     private lazy var panelController = PanelController(store: store, clipboard: clipboard)
+    private let onboarding = OnboardingController()
     private var hotKey: HotKey?
     private var statusItem: NSStatusItem?
 
@@ -19,6 +20,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         hotKey = HotKey(keyCode: UInt32(kVK_ANSI_V), modifiers: UInt32(optionKey))
         hotKey?.onFire = { [weak self] in self?.panelController.toggle() }
         writeLaunchStatus()
+
+        // Welcome window on first launch.
+        if !UserDefaults.standard.bool(forKey: "didOnboard") {
+            UserDefaults.standard.set(true, forKey: "didOnboard")
+            onboarding.show()
+        }
     }
 
     private func writeLaunchStatus() {
@@ -44,6 +51,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // Rebuild the menu each time it opens so recent items stay fresh.
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
+
+        // Nudge to enable auto-paste while Accessibility isn't granted.
+        if !PasteHelper.hasAccessibility(prompt: false) {
+            let warn = addItem(to: menu, "⚠︎ Ativar colar automático…", #selector(showOnboarding))
+            warn.attributedTitle = NSAttributedString(
+                string: warn.title,
+                attributes: [.foregroundColor: NSColor.systemOrange])
+            menu.addItem(.separator())
+        }
 
         let show = NSMenuItem(title: "Mostrar histórico", action: #selector(showPanel), keyEquivalent: "v")
         show.keyEquivalentModifierMask = [.option]
@@ -73,6 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         addItem(to: menu, "Limpar histórico", #selector(clearHistory))
         let login = addItem(to: menu, "Abrir no arranque", #selector(toggleLogin))
         login.state = LoginItem.isEnabled ? .on : .off
+        addItem(to: menu, "Bem-vindo ao Clippy", #selector(showOnboarding))
         menu.addItem(.separator())
         let quit = addItem(to: menu, "Sair do Clippy", #selector(quit))
         quit.keyEquivalent = "q"
@@ -89,6 +106,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: - Actions
 
     @objc private func showPanel() { panelController.show() }
+
+    @objc private func showOnboarding() { onboarding.show() }
 
     @objc private func pickRecent(_ sender: NSMenuItem) {
         guard let idString = sender.representedObject as? String,
