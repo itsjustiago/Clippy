@@ -10,13 +10,19 @@ images) and lets you paste older items with a global shortcut.
 
 **[⬇️ Download Clippy (.dmg)](https://github.com/itsjustiago/Clippy/releases/latest/download/Clippy.dmg)**
 
-1. Open the downloaded **Clippy.dmg**.
-2. Drag **Clippy.app** onto the **Applications** folder.
-3. Open Clippy from Applications. The first time, **right-click the app → Open → Open**
-   (macOS asks this once because the app isn't from the App Store — no Terminal needed).
-4. A welcome screen appears with a button to turn on auto-paste. Then just press **`⌥V`**.
+1. Open the downloaded **Clippy.dmg** and drag **Clippy.app** onto **Applications**.
+2. **First launch** — once, because it's a free app (not from the App Store):
+   - Double-click Clippy. macOS says it *"could not be verified"* → click **Done**.
+   - Open **System Settings → Privacy & Security**, scroll down to **Security**, and click
+     **Open Anyway** next to the Clippy line. Confirm with Touch ID / password.
+   - Clippy opens — and never asks again on that Mac.
+3. A welcome screen appears with a button to enable auto-paste. Then just press **`⌥V`**.
 
-That's it — no commands, no setup.
+No Terminal needed. On recent macOS the old *right-click → Open* trick no longer works —
+*Open Anyway* in Settings is the way.
+
+> **Tip:** the prompt only appears for apps **downloaded** from the web. An app **copied**
+> to a Mac (e.g. via a USB drive) opens with a plain double-click, no prompt at all.
 
 ## Features
 
