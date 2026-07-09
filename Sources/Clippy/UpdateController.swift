@@ -82,6 +82,7 @@ final class UpdateController: NSObject {
             .appendingPathComponent("Clippy/update.log").path
         let script = """
         #!/bin/bash
+        unset CLIPPY_DEBUG_VERSION CLIPPY_DEBUG_WINDOW
         NEW="\(newApp.path)"
         DEST="\(dest)"
         LOG="\(log)"
