@@ -30,7 +30,9 @@ That's it — no commands, no setup.
 - **Text and images** — images stored on disk with a thumbnail.
 - **Source app** — shows which app each copy came from.
 - **Privacy** — ignores content marked sensitive by password managers.
-- **Menu bar** — recent items, clear history, launch at login.
+- **Custom shortcut** — set your own key combo in Settings.
+- **Update check** — Clippy checks GitHub for newer releases and offers a one-click update in the menu.
+- **Menu bar** — recent items, clear history, launch at login, settings.
 - **Welcome screen** — first-run onboarding with a one-click Accessibility button.
 - No Dock icon. History stored locally (up to 200 items).
 
@@ -46,6 +48,14 @@ That's it — no commands, no setup.
 | `⌘P` | Pin / unpin |
 | `⌘⌫` | Delete the selected item |
 | `esc` | Close |
+
+`⌥V` is the default — change it any time in **Settings** (menu bar 📋 → *Definições…*).
+
+## Updates
+
+Clippy checks GitHub for a newer release on launch (you can turn this off in Settings).
+When one is available, the menu bar shows **⤓ Update to vX.Y.Z…**, which opens the
+download page — nothing is installed silently.
 
 ## The "unidentified developer" prompt
 
@@ -69,6 +79,14 @@ Requirements: macOS 14+ and the Command Line Tools (`swift`).
 
 - Regenerate the icon: `swift make-icon.swift && iconutil -c icns Clippy.iconset -o Clippy.icns`
 - Package the DMG: `./make-dmg.sh`
+
+### Releasing a new version
+
+1. Bump `CFBundleShortVersionString` in `Info.plist`.
+2. `./build.sh && ./make-dmg.sh`
+3. `gh release create vX.Y.Z Clippy.dmg --title "Clippy X.Y.Z" --notes "…"`
+
+Installed copies detect the new release on next launch and show the update in the menu.
 
 ## Project layout
 

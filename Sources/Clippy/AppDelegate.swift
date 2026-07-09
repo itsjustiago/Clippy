@@ -7,8 +7,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private lazy var clipboard = ClipboardManager(store: store)
     private lazy var panelController = PanelController(store: store, clipboard: clipboard)
     private let onboarding = OnboardingController()
+    private let settings = SettingsController()
     private var hotKey: HotKey?
     private var statusItem: NSStatusItem?
+    private var availableUpdate: UpdateInfo?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -16,9 +18,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         clipboard.start()
         setupStatusItem()
 
-        // Global shortcut: ⌥V
-        hotKey = HotKey(keyCode: UInt32(kVK_ANSI_V), modifiers: UInt32(optionKey))
-        hotKey?.onFire = { [weak self] in self?.panelController.toggle() }
+        registerHotKey()
+        settings.onShortcutChanged = { [weak self] in self?.registerHotKey() }
+        settings.onCheckedUpdate = { [weak self] info in self?.availableUpdate = info }
         writeLaunchStatus()
 
         // Welcome window on first launch.
@@ -26,6 +28,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             UserDefaults.standard.set(true, forKey: "didOnboard")
             onboarding.show()
         }
+
+        // Check GitHub for a newer release in the background.
+        if Updater.autoCheckEnabled {
+            Updater.check { [weak self] info in self?.availableUpdate = info }
+        }
+    }
+
+    private func registerHotKey() {
+        hotKey?.invalidate()
+        hotKey = HotKey(keyCode: UInt32(Shortcut.keyCode), modifiers: Shortcut.carbonModifiers)
+        hotKey?.onFire = { [weak self] in self?.panelController.toggle() }
     }
 
     private func writeLaunchStatus() {
@@ -52,6 +65,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
 
+        // Banner when a newer release is available on GitHub.
+        if let update = availableUpdate {
+            let item = addItem(to: menu, "⤓ Atualizar para \(update.version)…", #selector(openUpdate))
+            item.attributedTitle = NSAttributedString(
+                string: item.title,
+                attributes: [.foregroundColor: NSColor.systemGreen])
+            menu.addItem(.separator())
+        }
+
         // Nudge to enable auto-paste while Accessibility isn't granted.
         if !PasteHelper.hasAccessibility(prompt: false) {
             let warn = addItem(to: menu, "⚠︎ Ativar colar automático…", #selector(showOnboarding))
@@ -61,8 +83,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(.separator())
         }
 
-        let show = NSMenuItem(title: "Mostrar histórico", action: #selector(showPanel), keyEquivalent: "v")
-        show.keyEquivalentModifierMask = [.option]
+        let show = NSMenuItem(title: "Mostrar histórico  (\(Shortcut.display))",
+                              action: #selector(showPanel), keyEquivalent: "")
         show.target = self
         menu.addItem(show)
         menu.addItem(.separator())
@@ -89,6 +111,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         addItem(to: menu, "Limpar histórico", #selector(clearHistory))
         let login = addItem(to: menu, "Abrir no arranque", #selector(toggleLogin))
         login.state = LoginItem.isEnabled ? .on : .off
+        let prefs = addItem(to: menu, "Definições…", #selector(showSettings))
+        prefs.keyEquivalent = ","
         addItem(to: menu, "Bem-vindo ao Clippy", #selector(showOnboarding))
         menu.addItem(.separator())
         let quit = addItem(to: menu, "Sair do Clippy", #selector(quit))
@@ -109,6 +133,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func showOnboarding() { onboarding.show() }
 
+    @objc private func showSettings() { settings.show() }
+
+    @objc private func openUpdate() {
+        if let url = availableUpdate?.url { NSWorkspace.shared.open(url) }
+    }
+
     @objc private func pickRecent(_ sender: NSMenuItem) {
         guard let idString = sender.representedObject as? String,
               let clip = store.orderedItems.first(where: { $0.id.uuidString == idString }) else { return }
@@ -128,13 +158,15 @@ enum LoginItem {
         return false
     }
 
-    static func toggle() {
+    static func toggle() { setEnabled(!isEnabled) }
+
+    static func setEnabled(_ enabled: Bool) {
         guard #available(macOS 13.0, *) else { return }
         do {
-            if SMAppService.mainApp.status == .enabled {
-                try SMAppService.mainApp.unregister()
-            } else {
+            if enabled {
                 try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
             }
         } catch {
             NSLog("Clippy: login item error: \(error.localizedDescription)")

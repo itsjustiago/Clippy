@@ -12,19 +12,28 @@ final class HotKey {
 
     init?(keyCode: UInt32, modifiers: UInt32, id: UInt32 = 1) {
         self.id = id
-        HotKey.instances[id] = self
         HotKey.installHandlerIfNeeded()
 
         let hotKeyID = EventHotKeyID(signature: OSType(0x434C5059), id: id) // 'CLPY'
         let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID,
                                          GetApplicationEventTarget(), 0, &ref)
         if status != noErr { return nil }
+        HotKey.instances[id] = self
     }
 
-    deinit {
-        if let ref { UnregisterEventHotKey(ref) }
-        HotKey.instances[id] = nil
+    /// Unregisters the hotkey. Safe to call more than once.
+    func invalidate() {
+        if let ref {
+            UnregisterEventHotKey(ref)
+            self.ref = nil
+        }
+        // Only clear the slot if it still points at us (a replacement may own it now).
+        if HotKey.instances[id] === self {
+            HotKey.instances[id] = nil
+        }
     }
+
+    deinit { invalidate() }
 
     private static func installHandlerIfNeeded() {
         guard !handlerInstalled else { return }
