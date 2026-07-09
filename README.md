@@ -1,95 +1,92 @@
 # Clippy 📋
 
-Histórico de clipboard para macOS — o equivalente ao **Win + V** do Windows.
-Atalho global: **`⌥V`** (Option + V).
+A clipboard history for macOS — the equivalent of Windows' **Win + V**.
+Global shortcut: **`⌥V`** (Option + V).
 
-App nativa em Swift/SwiftUI que vive na barra de menus, guarda tudo o que copias
-(texto e imagens) e deixa-te colar itens antigos com um atalho global.
+A native Swift/SwiftUI menu-bar app that keeps everything you copy (text and
+images) and lets you paste older items with a global shortcut.
 
-## ⬇️ Download
+## ⬇️ Install
 
-**[Descarregar a última versão (Clippy.zip)](https://github.com/itsjustiago/Clippy/releases/latest/download/Clippy.zip)**
+**[⬇️ Download Clippy (.dmg)](https://github.com/itsjustiago/Clippy/releases/latest/download/Clippy.dmg)**
 
-1. Descompacta e arrasta **Clippy.app** para a pasta *Aplicações*.
-2. Como não é uma app da App Store, à primeira o macOS mostra um aviso.
-   **Clica com o botão direito em Clippy.app → Abrir → Abrir** (só uma vez).
-   Se o macOS não deixar logo, vai a *Definições do Sistema → Privacidade e Segurança*
-   e carrega em **"Abrir na mesma"**.
-   <br>*(Atalho para quem gosta do Terminal: `xattr -dr com.apple.quarantine /Applications/Clippy.app`)*
-3. Abre a Clippy: aparece um **ecrã de boas-vindas** com um botão para ativar o colar
-   automático. Depois é só carregar em **`⌥V`**.
+1. Open the downloaded **Clippy.dmg**.
+2. Drag **Clippy.app** onto the **Applications** folder.
+3. Open Clippy from Applications. The first time, **right-click the app → Open → Open**
+   (macOS asks this once because the app isn't from the App Store — no Terminal needed).
+4. A welcome screen appears with a button to turn on auto-paste. Then just press **`⌥V`**.
 
-> Preferes compilar a partir do código? Salta para [Compilar e instalar](#compilar-e-instalar).
+That's it — no commands, no setup.
 
-## Funcionalidades
+## Features
 
-- **Atalho global `⌥V`** — abre um painel flutuante em qualquer app.
-- **Pesquisa instantânea** — escreve para filtrar o histórico.
-- **Navegação por teclado** — `↑`/`↓` para mover, `↵` para colar, `esc` para fechar.
-- **Colar automático** — o item selecionado é colado na app onde estavas (precisa de permissão de Acessibilidade).
-- **Atalhos rápidos** — `⌘1`…`⌘9` colam diretamente os primeiros itens.
-- **Fixar favoritos** (`⌘P`) — ficam sempre no topo e não são apagados.
-- **Apagar** (`⌘⌫`) itens individuais ou limpar o histórico não-fixado.
-- **Texto e imagens** — imagens guardadas em disco, com miniatura.
-- **App de origem** — mostra de que aplicação veio cada cópia.
-- **Privacidade** — ignora conteúdo marcado como sensível por gestores de palavras-passe.
-- **Menu na barra** — vê os últimos itens, limpa o histórico, arranque automático.
-- **Ecrã de boas-vindas** — na 1.ª abertura, com botão para ativar o colar automático num clique.
-- Sem ícone no Dock. Histórico guardado localmente (até 200 itens).
+- **Global shortcut `⌥V`** — opens a floating panel in any app.
+- **Instant search** — type to filter the history.
+- **Keyboard navigation** — `↑`/`↓` to move, `↵` to paste, `esc` to close.
+- **Auto-paste** — the chosen item is pasted into the app you were in (needs Accessibility).
+- **Quick paste** — `⌘1`…`⌘9` paste the first items directly.
+- **Pin favourites** (`⌘P`) — kept at the top, never auto-removed.
+- **Delete** (`⌘⌫`) single items, or clear the unpinned history.
+- **Text and images** — images stored on disk with a thumbnail.
+- **Source app** — shows which app each copy came from.
+- **Privacy** — ignores content marked sensitive by password managers.
+- **Menu bar** — recent items, clear history, launch at login.
+- **Welcome screen** — first-run onboarding with a one-click Accessibility button.
+- No Dock icon. History stored locally (up to 200 items).
 
-## Compilar e instalar
+## Panel shortcuts
+
+| Key | Action |
+|-----|--------|
+| `⌥V` | Open / close the panel |
+| type | Search |
+| `↑` `↓` | Navigate |
+| `↵` | Paste the selected item |
+| `⌘1`–`⌘9` | Paste item N |
+| `⌘P` | Pin / unpin |
+| `⌘⌫` | Delete the selected item |
+| `esc` | Close |
+
+## The "unidentified developer" prompt
+
+Clippy is signed with a self-signed certificate and isn't notarised by Apple
+(that needs a paid Apple Developer account). So the **first** launch needs a
+right-click → Open; after that it opens normally. There's nothing to type.
+
+## Build from source
+
+For developers who'd rather build it themselves:
 
 ```bash
-./build.sh    # compila, assina, instala em /Applications e arranca
+./build.sh    # compiles, signs, installs to /Applications and launches
 ```
 
-Na primeira vez cria automaticamente um certificado próprio (`./setup-signing.sh`)
-numa keychain dedicada. Esse certificado dá à app uma **identidade estável**, para
-que a permissão de Acessibilidade cole de vez e **não volte a ser pedida a cada
-recompilação** (o problema típico das apps assinadas ad-hoc).
+The first run creates a self-signed certificate (`./setup-signing.sh`) in a
+dedicated keychain. It gives the app a **stable identity** so the Accessibility
+permission sticks and isn't re-requested on every rebuild.
 
-Requisitos: macOS 14+ e as Command Line Tools (`swift`).
+Requirements: macOS 14+ and the Command Line Tools (`swift`).
 
-## Primeira utilização
+- Regenerate the icon: `swift make-icon.swift && iconutil -c icns Clippy.iconset -o Clippy.icns`
+- Package the DMG: `./make-dmg.sh`
 
-1. Abre a app — aparece o ícone 📋 na barra de menus.
-2. Copia algumas coisas (`⌘C`).
-3. Carrega em **`⌥V`** para abrir o histórico.
-4. **Para o colar automático:** no ecrã de boas-vindas (ou no menu 📋 →
-   *Ativar colar automático*) carrega em **Conceder acesso** e ativa *Clippy* em
-   *Privacidade e Segurança → Acessibilidade*. Graças ao certificado estável, basta
-   concederes **uma vez** — fica para sempre.
-   (Sem esta permissão, o item é à mesma copiado — basta colares com `⌘V`.)
-
-## Atalhos no painel
-
-| Tecla | Ação |
-|-------|------|
-| `⌥V` | Abrir / fechar o painel |
-| escrever | Pesquisar |
-| `↑` `↓` | Navegar |
-| `↵` | Colar o selecionado |
-| `⌘1`–`⌘9` | Colar o item N |
-| `⌘P` | Fixar / desafixar |
-| `⌘⌫` | Apagar o selecionado |
-| `esc` | Fechar |
-
-## Estrutura do projeto
+## Project layout
 
 ```
 Sources/Clippy/
-  main.swift              — arranque (app de barra de menus)
-  AppDelegate.swift       — menu, atalho global, ciclo de vida
-  HistoryStore.swift      — modelo + persistência + imagens
-  ClipboardManager.swift  — monitorização do clipboard
-  HotKey.swift            — atalho global (Carbon)
-  PanelController.swift   — painel flutuante + teclado + colar
-  PasteHelper.swift       — simular ⌘V (Acessibilidade)
-  ContentView.swift       — interface SwiftUI
+  main.swift              — entry point (menu-bar app)
+  AppDelegate.swift       — menu, global shortcut, lifecycle
+  HistoryStore.swift      — model + persistence + images
+  ClipboardManager.swift  — clipboard monitoring
+  HotKey.swift            — global shortcut (Carbon)
+  PanelController.swift   — floating panel + keyboard + paste
+  PasteHelper.swift       — simulate ⌘V (Accessibility)
+  ContentView.swift       — SwiftUI panel UI
+  Onboarding.swift        — first-run welcome window
 ```
 
-## Notas
+## Notes
 
-- O atalho `⌥V` deixa de escrever o caractere `√` enquanto o Clippy corre.
-  Para outro atalho, muda a linha em `AppDelegate.applicationDidFinishLaunching`.
-- Dados em `~/Library/Application Support/Clippy/`.
+- While Clippy is running, `⌥V` no longer types the `√` character.
+  To change the shortcut, edit `AppDelegate.applicationDidFinishLaunching`.
+- Data is stored in `~/Library/Application Support/Clippy/`.

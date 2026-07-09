@@ -21,6 +21,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp ".build/release/Clippy" "$APP/Contents/MacOS/Clippy"
 cp "Info.plist" "$APP/Contents/Info.plist"
+[ -f "Clippy.icns" ] && cp "Clippy.icns" "$APP/Contents/Resources/Clippy.icns"
 
 sign() {
   security unlock-keychain -p "clippy-signing" "$KEYCHAIN" 2>/dev/null || true

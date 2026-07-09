@@ -6,6 +6,11 @@ DerivedData/
 # App bundle & release archives (distributed via GitHub Releases)
 Clippy.app/
 *.zip
+*.dmg
+
+# Icon build intermediates (Clippy.icns is committed)
+Clippy.iconset/
+icon-preview.png
 
 # macOS
 .DS_Store
