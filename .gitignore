@@ -1,0 +1,11 @@
+# Build artifacts
+.build/
+.swiftpm/
+DerivedData/
+
+# App bundle & release archives (distributed via GitHub Releases)
+Clippy.app/
+*.zip
+
+# macOS
+.DS_Store
