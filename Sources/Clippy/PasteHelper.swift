@@ -10,13 +10,26 @@ enum PasteHelper {
     }
 
     static func paste() {
+        postKey(keyCode: CGKeyCode(9), flags: .maskCommand) // ⌘V
+    }
+
+    /// Posts a key press (down+up) to the frontmost app.
+    static func postKey(keyCode: CGKeyCode, flags: CGEventFlags) {
         let source = CGEventSource(stateID: .combinedSessionState)
-        let vKey = CGKeyCode(9) // V
-        let down = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true)
-        down?.flags = .maskCommand
-        let up = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false)
-        up?.flags = .maskCommand
+        let down = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
+        down?.flags = flags
+        let up = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false)
+        up?.flags = flags
         down?.post(tap: .cghidEventTap)
         up?.post(tap: .cghidEventTap)
+    }
+
+    static func cgFlags(from flags: NSEvent.ModifierFlags) -> CGEventFlags {
+        var result: CGEventFlags = []
+        if flags.contains(.shift) { result.insert(.maskShift) }
+        if flags.contains(.control) { result.insert(.maskControl) }
+        if flags.contains(.option) { result.insert(.maskAlternate) }
+        if flags.contains(.command) { result.insert(.maskCommand) }
+        return result
     }
 }

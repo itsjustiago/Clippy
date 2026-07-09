@@ -7,6 +7,8 @@ final class PanelViewModel: ObservableObject {
     @Published var query = ""
     @Published var selectedIndex = 0
     @Published var focusPulse = 0
+    /// True only after the user clicks the search field. Typing filters only then.
+    @Published var searchActive = false
     unowned let store: HistoryStore
 
     init(store: HistoryStore) { self.store = store }
@@ -50,6 +52,7 @@ final class PanelController: NSObject, NSWindowDelegate {
         previousApp = NSWorkspace.shared.frontmostApplication
         vm.query = ""
         vm.selectedIndex = 0
+        vm.searchActive = false
         vm.focusPulse += 1
         position(panel)
         addMonitor()
@@ -73,6 +76,7 @@ final class PanelController: NSObject, NSWindowDelegate {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
+        panel.isMovableByWindowBackground = true   // draggable by empty areas
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         panel.delegate = self
 
@@ -93,9 +97,13 @@ final class PanelController: NSObject, NSWindowDelegate {
         let mouse = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
         guard let screen else { return }
+        let vf = screen.visibleFrame
         let size = panel.frame.size
-        let x = screen.frame.midX - size.width / 2
-        let y = screen.frame.midY - size.height / 2 + screen.frame.height * 0.10
+        // Open next to the cursor (cursor just inside the top-left), clamped on-screen.
+        var x = mouse.x - 28
+        var y = mouse.y - size.height + 28
+        x = min(max(x, vf.minX + 8), vf.maxX - size.width - 8)
+        y = min(max(y, vf.minY + 8), vf.maxY - size.height - 8)
         panel.setFrameOrigin(NSPoint(x: x, y: y))
     }
 
@@ -182,7 +190,28 @@ final class PanelController: NSObject, NSWindowDelegate {
                 if filtered.indices.contains(idx) { choose(filtered[idx]) }
                 return nil
             }
+            // Typing only filters if the user clicked the search field first.
+            // Otherwise close the panel and pass the keystroke to the app underneath.
+            if !vm.searchActive {
+                forwardKeyToPrevious(keyCode: event.keyCode, flags: event.modifierFlags)
+                return nil
+            }
             return event
+        }
+    }
+
+    /// Closes the panel and re-sends a keystroke to the previously focused app.
+    private func forwardKeyToPrevious(keyCode: UInt16, flags: NSEvent.ModifierFlags) {
+        let prev = previousApp
+        let cgFlags = PasteHelper.cgFlags(from: flags)
+        hide()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
+            prev?.activate()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                if PasteHelper.hasAccessibility(prompt: false) {
+                    PasteHelper.postKey(keyCode: CGKeyCode(keyCode), flags: cgFlags)
+                }
+            }
         }
     }
 }

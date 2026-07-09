@@ -40,6 +40,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         switch ProcessInfo.processInfo.environment["CLIPPY_DEBUG_WINDOW"] {
         case "settings":
             settings.show()
+        case "panel":
+            panelController.show()
         case "update":
             Updater.check { [weak self] info in
                 if let info { self?.updater.start(info) }
@@ -123,8 +125,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(.separator())
         addItem(to: menu, "Limpar histórico", #selector(clearHistory))
-        let login = addItem(to: menu, "Abrir no arranque", #selector(toggleLogin))
-        login.state = LoginItem.isEnabled ? .on : .off
         let prefs = addItem(to: menu, "Definições…", #selector(showSettings))
         prefs.keyEquivalent = ","
         addItem(to: menu, "Bem-vindo ao Clippy", #selector(showOnboarding))
@@ -160,7 +160,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func clearHistory() { store.clearUnpinned() }
-    @objc private func toggleLogin() { LoginItem.toggle() }
     @objc private func quit() { NSApp.terminate(nil) }
 }
 

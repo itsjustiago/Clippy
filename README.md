@@ -26,8 +26,8 @@ No Terminal needed. On recent macOS the old *right-click → Open* trick no long
 
 ## Features
 
-- **Global shortcut `⌥V`** — opens a floating panel in any app.
-- **Instant search** — type to filter the history.
+- **Global shortcut `⌥V`** — opens a floating panel **at the pointer** (draggable).
+- **Search** — click the search bar to filter; if you just start typing, the panel closes and your keystrokes go to the app underneath.
 - **Keyboard navigation** — `↑`/`↓` to move, `↵` to paste, `esc` to close.
 - **Auto-paste** — the chosen item is pasted into the app you were in (needs Accessibility).
 - **Quick paste** — `⌘1`…`⌘9` paste the first items directly.
@@ -46,8 +46,8 @@ No Terminal needed. On recent macOS the old *right-click → Open* trick no long
 
 | Key | Action |
 |-----|--------|
-| `⌥V` | Open / close the panel |
-| type | Search |
+| `⌥V` | Open / close the panel (at the pointer) |
+| click 🔍 then type | Filter the list |
 | `↑` `↓` | Navigate |
 | `↵` | Paste the selected item |
 | `⌘1`–`⌘9` | Paste item N |

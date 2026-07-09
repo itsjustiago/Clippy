@@ -32,10 +32,10 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.10))
         )
-        .onAppear { searchFocused = true }
-        .onChange(of: vm.focusPulse) {
-            searchFocused = true
-        }
+        // Search is NOT focused by default — the user must click it to type/search.
+        .onAppear { searchFocused = false }
+        .onChange(of: vm.focusPulse) { searchFocused = false }
+        .onChange(of: searchFocused) { vm.searchActive = searchFocused }
         .onChange(of: vm.query) { vm.selectedIndex = 0 }
     }
 

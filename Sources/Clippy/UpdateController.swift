@@ -75,7 +75,6 @@ final class UpdateController: NSObject {
     private func swapAndRelaunch(newApp: URL) {
         let dest = Bundle.main.bundlePath
         let pid = ProcessInfo.processInfo.processIdentifier
-        let page = pageURL?.absoluteString ?? ""
         // Move the old bundle aside, copy the new one in; restore on failure so the
         // app is never left missing.
         let log = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
