@@ -2,7 +2,8 @@ import Foundation
 
 struct UpdateInfo {
     let version: String
-    let url: URL
+    let pageURL: URL
+    let zipURL: URL?
 }
 
 /// Lightweight update check against the GitHub Releases API (no auto-download).
@@ -10,7 +11,8 @@ enum Updater {
     static let repo = "itsjustiago/Clippy"
 
     static var currentVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
+        if let debug = ProcessInfo.processInfo.environment["CLIPPY_DEBUG_VERSION"] { return debug }
+        return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
 
     static var autoCheckEnabled: Bool {
@@ -31,9 +33,15 @@ enum Updater {
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let tag = json["tag_name"] as? String,
                isNewer(tag, than: currentVersion) {
-                let link = (json["html_url"] as? String).flatMap(URL.init(string:))
+                let page = (json["html_url"] as? String).flatMap(URL.init(string:))
                     ?? URL(string: "https://github.com/\(repo)/releases/latest")!
-                result = UpdateInfo(version: tag, url: link)
+                var zip: URL?
+                if let assets = json["assets"] as? [[String: Any]] {
+                    for a in assets where (a["name"] as? String) == "Clippy.zip" {
+                        zip = (a["browser_download_url"] as? String).flatMap(URL.init(string:))
+                    }
+                }
+                result = UpdateInfo(version: tag, pageURL: page, zipURL: zip)
             }
             DispatchQueue.main.async { completion(result) }
         }.resume()

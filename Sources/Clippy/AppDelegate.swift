@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private lazy var panelController = PanelController(store: store, clipboard: clipboard)
     private let onboarding = OnboardingController()
     private let settings = SettingsController()
+    private let updater = UpdateController()
     private var hotKey: HotKey?
     private var statusItem: NSStatusItem?
     private var availableUpdate: UpdateInfo?
@@ -21,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         registerHotKey()
         settings.onShortcutChanged = { [weak self] in self?.registerHotKey() }
         settings.onCheckedUpdate = { [weak self] info in self?.availableUpdate = info }
+        settings.onStartUpdate = { [weak self] info in self?.updater.start(info) }
         writeLaunchStatus()
 
         // Welcome window on first launch.
@@ -32,6 +34,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Check GitHub for a newer release in the background.
         if Updater.autoCheckEnabled {
             Updater.check { [weak self] info in self?.availableUpdate = info }
+        }
+
+        // Debug hooks for verifying flows without clicking the menu.
+        switch ProcessInfo.processInfo.environment["CLIPPY_DEBUG_WINDOW"] {
+        case "settings":
+            settings.show()
+        case "update":
+            Updater.check { [weak self] info in
+                if let info { self?.updater.start(info) }
+            }
+        default:
+            break
         }
     }
 
@@ -136,7 +150,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func showSettings() { settings.show() }
 
     @objc private func openUpdate() {
-        if let url = availableUpdate?.url { NSWorkspace.shared.open(url) }
+        if let update = availableUpdate { updater.start(update) }
     }
 
     @objc private func pickRecent(_ sender: NSMenuItem) {

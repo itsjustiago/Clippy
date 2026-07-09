@@ -1,5 +1,5 @@
 #!/bin/bash
-# Cria um Clippy.dmg com a app + atalho para Aplicações (instalação a arrastar).
+# Empacota a app: Clippy.dmg (instalação a arrastar) + Clippy.zip (para o auto-update).
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -14,4 +14,8 @@ ln -s /Applications "$STAGING/Applications"
 rm -f Clippy.dmg
 hdiutil create -volname "Clippy" -srcfolder "$STAGING" -ov -format UDZO -quiet Clippy.dmg
 
-echo "✓ Clippy.dmg criado"
+# Zip usado pelo atualizador embutido ( dito preserva o bundle + assinatura).
+rm -f Clippy.zip
+ditto -c -k --keepParent "Clippy.app" Clippy.zip
+
+echo "✓ Clippy.dmg + Clippy.zip criados"

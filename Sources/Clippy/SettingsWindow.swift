@@ -8,6 +8,7 @@ final class SettingsModel: ObservableObject {
     @Published var launchAtLogin = LoginItem.isEnabled
     @Published var autoCheck = Updater.autoCheckEnabled
     @Published var updateStatus = ""
+    @Published var foundUpdate: UpdateInfo?
     let version = Updater.currentVersion
 }
 
@@ -21,6 +22,8 @@ final class SettingsController: NSObject, NSWindowDelegate {
     var onShortcutChanged: (() -> Void)?
     /// Called after a manual update check so the menu can reflect the result.
     var onCheckedUpdate: ((UpdateInfo?) -> Void)?
+    /// Called when the user asks to install an available update.
+    var onStartUpdate: ((UpdateInfo) -> Void)?
 
     func show() {
         if window == nil { build() }
@@ -42,7 +45,8 @@ final class SettingsController: NSObject, NSWindowDelegate {
             resetShortcut: { [weak self] in self?.resetShortcut() },
             setLaunchAtLogin: { LoginItem.setEnabled($0) },
             setAutoCheck: { Updater.autoCheckEnabled = $0 },
-            checkNow: { [weak self] in self?.checkNow() })
+            checkNow: { [weak self] in self?.checkNow() },
+            startUpdate: { [weak self] info in self?.onStartUpdate?(info) })
         let w = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 430, height: 400),
             styleMask: [.titled, .closable], backing: .buffered, defer: false)
@@ -92,10 +96,12 @@ final class SettingsController: NSObject, NSWindowDelegate {
 
     private func checkNow() {
         model.updateStatus = "A procurar…"
+        model.foundUpdate = nil
         Updater.check { [weak self] info in
             guard let self else { return }
+            self.model.foundUpdate = info
             if let info {
-                self.model.updateStatus = "Atualização disponível: \(info.version) — abre o menu 📋 para transferir."
+                self.model.updateStatus = "Atualização disponível: \(info.version)."
             } else {
                 self.model.updateStatus = "Estás na versão mais recente (\(self.model.version))."
             }
@@ -113,6 +119,7 @@ struct SettingsView: View {
     var setLaunchAtLogin: (Bool) -> Void
     var setAutoCheck: (Bool) -> Void
     var checkNow: () -> Void
+    var startUpdate: (UpdateInfo) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -165,6 +172,10 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                }
+                if let update = model.foundUpdate {
+                    Button("Atualizar para \(update.version) agora") { startUpdate(update) }
+                        .buttonStyle(.borderedProminent)
                 }
             }
 
