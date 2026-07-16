@@ -40,7 +40,7 @@ final class OnboardingController: NSObject, NSWindowDelegate {
 
     private func build() {
         let w = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 470),
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 480),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered, defer: false)
         w.titlebarAppearsTransparent = true
@@ -65,17 +65,15 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 10) {
-                Image(systemName: "doc.on.clipboard.fill")
-                    .font(.system(size: 44))
-                    .foregroundStyle(.tint)
+            VStack(spacing: 12) {
+                AppIcon(systemName: "doc.on.clipboard.fill", size: 64)
                 Text("Bem-vindo ao Clippy")
                     .font(.system(size: 22, weight: .bold))
                 Text("O teu histórico de clipboard, tipo Win + V.")
                     .foregroundStyle(.secondary)
             }
-            .padding(.top, 30)
-            .padding(.bottom, 22)
+            .padding(.top, 32)
+            .padding(.bottom, 24)
 
             VStack(alignment: .leading, spacing: 14) {
                 infoRow(icon: "keyboard",
@@ -83,7 +81,7 @@ struct OnboardingView: View {
                         text: "Carrega em Option + V em qualquer app para ver e colar do histórico.")
                 infoRow(icon: "menubar.rectangle",
                         title: "Vive na barra de menus",
-                        text: "Clica no ícone 📋 no topo do ecrã para opções e itens recentes.")
+                        text: "Clica no ícone no topo do ecrã para opções e itens recentes.")
                 accessibilityCard
             }
             .padding(.horizontal, 28)
@@ -94,17 +92,19 @@ struct OnboardingView: View {
                 Text("Começar").frame(maxWidth: .infinity)
             }
             .controlSize(.large)
+            .buttonStyle(.borderedProminent)
+            .tint(Brand.tint)
             .keyboardShortcut(.defaultAction)
             .padding(.horizontal, 28)
             .padding(.bottom, 26)
         }
-        .frame(width: 460, height: 470)
+        .frame(width: 460, height: 480)
     }
 
     private var accessibilityCard: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: model.trusted ? "checkmark.circle.fill" : "hand.raised.fill")
-                .font(.system(size: 18))
+                .font(.system(size: 20))
                 .foregroundStyle(model.trusted ? .green : .orange)
                 .frame(width: 26)
             VStack(alignment: .leading, spacing: 4) {
@@ -125,7 +125,13 @@ struct OnboardingView: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 10))
+        .background(
+            (model.trusted ? Color.green : Color.orange).opacity(0.10),
+            in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .strokeBorder((model.trusted ? Color.green : Color.orange).opacity(0.22))
+        )
         .animation(.easeInOut(duration: 0.2), value: model.trusted)
     }
 
@@ -139,10 +145,7 @@ struct OnboardingView: View {
 
     private func infoRow(icon: String, title: String, text: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundStyle(.tint)
-                .frame(width: 26)
+            AppIcon(systemName: icon, size: 30)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(.system(size: 14, weight: .semibold))
                 Text(text)
