@@ -48,9 +48,12 @@ final class SettingsController: NSObject, NSWindowDelegate {
             checkNow: { [weak self] in self?.checkNow() },
             startUpdate: { [weak self] info in self?.onStartUpdate?(info) })
         let w = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 430, height: 400),
-            styleMask: [.titled, .closable], backing: .buffered, defer: false)
+            contentRect: NSRect(x: 0, y: 0, width: 440, height: 480),
+            styleMask: [.titled, .closable, .fullSizeContentView], backing: .buffered, defer: false)
         w.title = "Definições do Clippy"
+        w.titlebarAppearsTransparent = true
+        w.titleVisibility = .hidden
+        w.isMovableByWindowBackground = true
         w.isReleasedWhenClosed = false
         w.delegate = self
         w.contentView = NSHostingView(rootView: view)
@@ -122,66 +125,79 @@ struct SettingsView: View {
     var startUpdate: (UpdateInfo) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            // Shortcut
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Atalho global").font(.headline)
-                HStack(spacing: 10) {
-                    Text("Abrir o histórico").foregroundStyle(.secondary)
-                    Spacer()
-                    Button(action: startRecording) {
-                        Text(model.recording ? "Prime as teclas…" : model.shortcutDisplay)
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .frame(minWidth: 96)
-                            .padding(.vertical, 3)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                header
+
+                SettingsSection(title: "Atalho global") {
+                    SettingsRow(
+                        title: "Abrir o histórico",
+                        subtitle: model.recording
+                            ? "Prime a combinação (inclui ⌘, ⌥, ⌃ ou ⇧). Esc cancela."
+                            : "Precisa de pelo menos um modificador."
+                    ) {
+                        HStack(spacing: 8) {
+                            Button(action: startRecording) {
+                                Text(model.recording ? "Prime as teclas…" : model.shortcutDisplay)
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .frame(minWidth: 92)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(model.recording)
+                            Button("Repor", action: resetShortcut)
+                                .buttonStyle(.borderless)
+                                .disabled(model.recording)
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(model.recording)
-                    Button("Repor", action: resetShortcut)
-                        .buttonStyle(.borderless)
-                        .disabled(model.recording)
                 }
-                Text(model.recording
-                     ? "Prime a combinação (inclui ⌘, ⌥, ⌃ ou ⇧). Esc cancela."
-                     : "Precisa de pelo menos um modificador (⌘, ⌥, ⌃ ou ⇧).")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
 
-            Divider()
-
-            Toggle("Abrir o Clippy no arranque", isOn: Binding(
-                get: { model.launchAtLogin },
-                set: { setLaunchAtLogin($0); model.launchAtLogin = LoginItem.isEnabled }))
-
-            Divider()
-
-            // Updates
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Atualizações").font(.headline)
-                Toggle("Procurar atualizações automaticamente", isOn: Binding(
-                    get: { model.autoCheck },
-                    set: { model.autoCheck = $0; setAutoCheck($0) }))
-                HStack {
-                    Text("Versão \(model.version)").foregroundStyle(.secondary)
-                    Spacer()
-                    Button("Procurar agora", action: checkNow)
+                SettingsSection(title: "Arranque") {
+                    ToggleRow(
+                        title: "Abrir o Clippy no arranque",
+                        subtitle: "Inicia automaticamente quando entras na sessão.",
+                        isOn: Binding(
+                            get: { model.launchAtLogin },
+                            set: { setLaunchAtLogin($0); model.launchAtLogin = LoginItem.isEnabled }))
                 }
-                if !model.updateStatus.isEmpty {
-                    Text(model.updateStatus)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                if let update = model.foundUpdate {
-                    Button("Atualizar para \(update.version) agora") { startUpdate(update) }
-                        .buttonStyle(.borderedProminent)
+
+                SettingsSection(title: "Atualizações") {
+                    ToggleRow(
+                        title: "Procurar automaticamente",
+                        isOn: Binding(
+                            get: { model.autoCheck },
+                            set: { model.autoCheck = $0; setAutoCheck($0) }))
+                    RowDivider()
+                    SettingsRow(
+                        title: "Versão \(model.version)",
+                        subtitle: model.updateStatus.isEmpty ? nil : model.updateStatus
+                    ) {
+                        if let update = model.foundUpdate {
+                            Button("Atualizar para \(update.version)") { startUpdate(update) }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.small)
+                        } else {
+                            Button("Procurar agora", action: checkNow)
+                                .controlSize(.small)
+                        }
+                    }
                 }
             }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(width: 440, height: 480)
+        .background(.background)
+    }
 
+    private var header: some View {
+        HStack(spacing: 14) {
+            AppIcon(systemName: "doc.on.clipboard.fill", size: 52)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Clippy").font(.title2.weight(.bold))
+                Text("O teu histórico de clipboard, sempre à mão.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
             Spacer(minLength: 0)
         }
-        .padding(22)
-        .frame(width: 430, height: 400)
     }
 }

@@ -197,7 +197,7 @@ struct ClipRow: View {
     }
 
     private var rowBackground: Color {
-        if selected { return Color.accentColor.opacity(0.22) }
+        if selected { return Brand.tint.opacity(0.22) }
         if hovering { return Color.primary.opacity(0.06) }
         return .clear
     }
